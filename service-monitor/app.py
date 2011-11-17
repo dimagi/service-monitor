@@ -1,6 +1,8 @@
-import datetime
+from datetime import datetime
 import pytz
+import re
 
+from .tasks import send_notification_email
 from .models import *
 from rapidsms.apps.base import AppBase
 from scheduler.models import *
@@ -19,7 +21,7 @@ class App(AppBase):
         except ObjectDoesNotExist:
             e = EventSchedule(
                 description="Service Monitor Schedule"
-               ,callback="service_monitor.tasks.run"
+               ,callback="service-monitor.tasks.run"
                ,minutes=ALL_VALUE
             )
             e.save()
@@ -31,18 +33,31 @@ class App(AppBase):
     """
     def handle(self, message):
         try:
-            # Mark the service as having responded
-            current_date = datetime.datetime.now(tz=pytz.utc)
+            # Get the regular expression which the response should match
             service = Service.objects.get(connection=message.connection)
+            valid_response_regex = service.valid_response_regex
+            if (valid_response_regex is None) or (valid_response_regex == ""):
+                valid_response_regex = r"^(.+)$"
+            regex = re.compile(valid_response_regex)
+            
+            # Mark the service as having responded, either with a valid or invalid response
+            current_date = datetime.now(tz=pytz.utc)
             service.last_response_date = current_date
-            service.ping_state = SERVICE_MONITOR__RESPONSE_RECEIVED
+            if regex.match(message.text):
+                service.ping_state = SERVICE_MONITOR__VALID_RESPONSE_RECEIVED
+            else:
+                service.ping_state = SERVICE_MONITOR__INVALID_RESPONSE_RECEIVED
             service.save()
             
             # Create an entry in the PingLog
             pinglog_entry = PingLog(service=service,date=current_date,ping_state=service.ping_state)
             pinglog_entry.save()
-        except Exception:
-            pass
+            
+            # If an invalid response was received, send a notification email
+            if service.ping_state == SERVICE_MONITOR__INVALID_RESPONSE_RECEIVED:
+                send_notification_email(service)
+        except Exception, e:
+            self.exception(e)
         
         # This should always return true to prevent any auto-texting of default messages back and forth
         return True

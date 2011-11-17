@@ -11,8 +11,9 @@ SERVICE_MONITOR__HTTP = 1
 SERVICE_MONITOR__SMS = 2
 
 SERVICE_MONITOR__REQUEST_SENT = 1
-SERVICE_MONITOR__RESPONSE_RECEIVED = 2
+SERVICE_MONITOR__VALID_RESPONSE_RECEIVED = 2
 SERVICE_MONITOR__NO_RESPONSE = 3
+SERVICE_MONITOR__INVALID_RESPONSE_RECEIVED = 4
 
 SERVICE_MONITOR__SERVICE_TYPES = (
     (SERVICE_MONITOR__HTTP, "HTTP")
@@ -21,8 +22,9 @@ SERVICE_MONITOR__SERVICE_TYPES = (
 
 SERVICE_MONITOR__REQUEST_STATES = (
     (SERVICE_MONITOR__REQUEST_SENT, "Request Sent")
-   ,(SERVICE_MONITOR__RESPONSE_RECEIVED, "Response Received")
+   ,(SERVICE_MONITOR__VALID_RESPONSE_RECEIVED, "Valid Response Received")
    ,(SERVICE_MONITOR__NO_RESPONSE, "No Response")
+   ,(SERVICE_MONITOR__INVALID_RESPONSE_RECEIVED, "Invalid Response Received")
 )
 
 """
@@ -39,6 +41,9 @@ email
 
 """
 class Service(models.Model):
+    class Meta:
+        db_table = "service_monitor_service"
+    
     name = models.CharField(
         max_length=50
        ,help_text="The name of this service."
@@ -53,6 +58,19 @@ class Service(models.Model):
        ,null=True
        ,blank=True
        ,help_text="For service type SMS only: the connection to use when sending the SMS."
+    )
+    
+    sms_to_send = models.CharField(
+        max_length=160
+       ,help_text="For service type SMS only: the SMS to send to the service when checking for responsiveness."
+       ,blank=True
+    )
+    
+    valid_response_regex = models.CharField(
+        max_length=200
+       ,help_text="For service type SMS only: the regular expression used to validate the response from the SMS service. Leave blank to count any response as a valid response."
+       ,null=True
+       ,blank=True
     )
     
     url = models.CharField(
@@ -126,6 +144,9 @@ All ping requests, responses, and timeouts are
 stored in the PingLog (one per entry).
 """
 class PingLog(models.Model):
+    class Meta:
+        db_table = "service_monitor_pinglog"
+    
     service = models.ForeignKey("Service",db_index=True)
     date = models.DateTimeField(db_index=True)
     ping_state = models.IntegerField(choices=SERVICE_MONITOR__REQUEST_STATES,db_index=True)

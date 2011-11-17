@@ -13,14 +13,21 @@ from urllib2 import URLError
 Sends a "Service Not Responding" email to the list of email 
 recipients specified for the given service.
 """
-def send_notification_email(service):
-    subject_text = "Service Monitor: Service '" + service.name + "' Not Responding"
+def send_notification_email(service, **kwargs):
+    subject_text = "Service Monitor: Service '" + service.name + "'"
     body_text = ""
     
     if service.service_type == SERVICE_MONITOR__SMS:
-        body_text = "Mobile Number: " + service.connection.identity
+        if service.ping_state == SERVICE_MONITOR__NO_RESPONSE:
+            body_text = "No response for mobile number: " + service.connection.identity
+        elif service.ping_state == SERVICE_MONITOR__INVALID_RESPONSE_RECEIVED:
+            body_text = "Invalid response for mobile number: " + service.connection.identity
     elif service.service_type == SERVICE_MONITOR__HTTP:
-        body_text = "URL: " + service.url
+        urlerror = kwargs["urlerror"]
+        if isinstance(urlerror, urllib2.HTTPError):
+            body_text = "HTTP Error Code '" + str(urlerror.code) + "' for url: " + service.url
+        else:
+            body_text = "URL Error '" + str(type(urlerror)) + "' for url: " + service.url
     
     recipients = service.email_list.split("|")
     
@@ -57,7 +64,7 @@ def run(*args, **kwargs):
                 pinglog_entry.save()
                 
                 # Send the SMS
-                send_message(service.connection, "Ping Request")
+                send_message(service.connection, service.sms_to_send)
             elif service.ping_state == SERVICE_MONITOR__REQUEST_SENT and service.has_timed_out():
                 # Mark the request as having no response
                 service.ping_state = SERVICE_MONITOR__NO_RESPONSE
@@ -94,13 +101,13 @@ def run(*args, **kwargs):
                     # Mark the service as having responded 
                     current_date = datetime.datetime.now(tz=pytz.utc)
                     service.last_response_date = current_date
-                    service.ping_state = SERVICE_MONITOR__RESPONSE_RECEIVED
+                    service.ping_state = SERVICE_MONITOR__VALID_RESPONSE_RECEIVED
                     service.save()
                     
                     # Create an entry in the PingLog
                     pinglog_entry = PingLog(service=service,date=current_date,ping_state=service.ping_state)
                     pinglog_entry.save()
-                except URLError:
+                except URLError as e:
                     # Mark the request as having no response
                     service.ping_state = SERVICE_MONITOR__NO_RESPONSE
                     service.save()
@@ -111,5 +118,5 @@ def run(*args, **kwargs):
                     pinglog_entry.save()
                     
                     # Send an email notification
-                    send_notification_email(service)
+                    send_notification_email(service,urlerror=e)
 
