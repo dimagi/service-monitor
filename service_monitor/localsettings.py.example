@@ -1,0 +1,32 @@
+from settings import *
+
+DATABASES = {
+    "default": {
+        "ENGINE":   "django.db.backends.postgresql_psycopg2"
+       ,"NAME":     "service_monitor"
+       ,"USER":     ""
+       ,"PASSWORD": ""
+       ,"HOST":     ""
+    }
+}
+
+INSTALLED_BACKENDS = {
+    "tropo": {
+        "ENGINE":           "rapidsms.backends.http"
+       ,"host":             "0.0.0.0"
+       ,"port":             "8000"
+       ,"gateway_url":      ""
+       ,"params_outgoing":  ""
+       ,"params_incoming":  ""
+    }
+}
+
+EMAIL_USE_TLS       = True
+EMAIL_HOST          = ""
+EMAIL_HOST_USER     = ""
+EMAIL_HOST_PASSWORD = ""
+EMAIL_PORT          = 587
+
+SERVICE_MONITOR__PING_INTERVAL = 10
+SERVICE_MONITOR__WAIT_TIME = 1
+
