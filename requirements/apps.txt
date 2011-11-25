@@ -19,5 +19,6 @@ johnny-cache
 python-memcached
 psycopg2
 gdata
+gunicorn
 git+https://github.com/dimagi/django-scheduler.git#egg=scheduler
 git+https://github.com/dimagi/rapidsms.git#egg=rapidsms

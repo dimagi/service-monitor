@@ -34,9 +34,9 @@ RSYNC_EXCLUDE = (
     '*.example',
     '*.db',
 )
-env.home = '/home/dev_project'                              #Edit me!
-env.project = 'dev_project'                                 #Edit me!
-env.code_repo = 'git://github.com/dimagi/dev_project.git'   #Edit me!
+env.home = '/home/service_monitor'                              #Edit me!
+env.project = 'service_monitor'                                 #Edit me!
+env.code_repo = 'git://github.com/dimagi/service-monitor.git'   #Edit me!
 
 
 def _setup_path():
@@ -67,7 +67,7 @@ def staging():
     env.code_branch = ''
     env.sudo_user = ''
     env.environment = 'staging'
-    env.server_port = '9002'
+    env.server_port = ''
     env.server_name = ''
     env.hosts = ['']
     env.settings = '%(project)s.localsettings' % env
@@ -80,11 +80,13 @@ def production():
     env.code_branch = 'master'
     env.sudo_user = 'service_monitor'
     env.environment = 'production'
-    env.server_port = '9010'
+    env.server_port = '9001'
     env.server_name = 'service-monitor.dimagi.com'
     env.hosts = ['50.56.239.86']
-    env.settings = '%(project)s.localsettings' % env
+    env.settings = 'localsettings'
     env.db = '%s_%s' % (env.project, env.environment)
+    env.local_router_port = '9002'
+    env.remote_router_port = '8000'
     _setup_path()
 
 
@@ -174,7 +176,7 @@ def deploy():
         update_requirements()
         update_services()
         migrate()
-        collectstatic()
+        #collectstatic()
         touch()
     finally:
         # hopefully bring the server back to life if anything goes wrong
@@ -271,7 +273,7 @@ def migrate():
     require('project_root', provided_by=('production', 'demo', 'staging'))
     with cd(env.project_root):
         run('%(virtualenv_root)s/bin/python manage.py syncdb --noinput --settings=%(settings)s' % env)
-        run('%(virtualenv_root)s/bin/python manage.py migrate --noinput --settings=%(settings)s' % env)
+        #run('%(virtualenv_root)s/bin/python manage.py migrate --noinput --settings=%(settings)s' % env)
 
 
 def collectstatic():
