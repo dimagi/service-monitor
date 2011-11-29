@@ -18,3 +18,4 @@ build-essential
 git-core
 couchdb
 wkhtmltopdf
+rabbitmq-server

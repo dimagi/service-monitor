@@ -21,7 +21,7 @@ class App(AppBase):
         except ObjectDoesNotExist:
             e = EventSchedule(
                 description="Service Monitor Schedule"
-               ,callback="service_monitor.tasks.run"
+               ,callback="monitor.tasks.run"
                ,minutes=ALL_VALUE
             )
             e.save()
