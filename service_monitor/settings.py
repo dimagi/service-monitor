@@ -61,7 +61,7 @@ INSTALLED_APPS = [
     "rapidsms.contrib.echo",
     
     "scheduler",
-    "service_monitor"
+    "monitor"
 ]
 
 RAPIDSMS_HANDLERS_EXCLUDE_APPS = [
