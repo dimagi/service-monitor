@@ -48,8 +48,11 @@ Installation
 9. Run each of the following commands in separate console windows (don't forget to `workon service-monitor` in each console):
   
     python manage.py runserver 0.0.0.0:8080 --settings localsettings
+    
     python manage.py runrouter --settings localsettings
+    
     python manage.py celeryd --settings localsettings
+    
     python manage.py celerybeat --settings localsettings
 
 Usage
@@ -64,7 +67,8 @@ All services to monitor are specified as Service objects. To monitor another ser
 4. SMS to Send - This is the SMS that will be sent to monitor gateway responsiveness.
 5. Valid Response Regex - Optionally, a regular expression used to validate the response from the gateway. If blank, any response is considered valid.
 6. Email list - A pipe-delimited list of recipients of the notification emails for this service.
-    
+
+
 * To create an HTTP Service, fill out the following information:
 
 1. Name - This is the name that will show up in notification emails.
