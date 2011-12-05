@@ -85,6 +85,10 @@ class Service(models.Model):
        ,help_text="A list of recipients for the email notification if the service is not responding (separate multiple email addresses with a | )."
     )
     
+    active = models.BooleanField(
+        default=True
+    )
+    
     last_request_date = models.DateTimeField(
         null=True
        ,blank=True

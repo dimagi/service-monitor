@@ -41,12 +41,12 @@ def send_notification_email(service, **kwargs):
 """
 This is the callback function that is called by the
 EventSchedule every minute. For each service in the 
-database, this function will see if enough time has
-passed to ping the service again, and ping the service
-accordingly.
+database that is active, this function will see if enough 
+time has passed to ping the service again, and ping the 
+service accordingly.
 """
 def run(*args, **kwargs):
-    for service in Service.objects.all():
+    for service in Service.objects.filter(active=True):
         if service.service_type == SERVICE_MONITOR__SMS:
             #
             # Handle SMS Monitoring
