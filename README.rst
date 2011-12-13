@@ -67,7 +67,8 @@ All services to monitor are specified as Service objects. To monitor another ser
 4. SMS to Send - This is the SMS that will be sent to monitor gateway responsiveness.
 5. Valid Response Regex - Optionally, a regular expression used to validate the response from the gateway. If blank, any response is considered valid.
 6. Email list - A pipe-delimited list of recipients of the notification emails for this service.
-
+7. Ping interval minutes - The number of minutes between each ping of the service.
+8. Timeout minutes - The number of minutes to wait before determining that the service has timed out.
 
 * To create an HTTP Service, fill out the following information:
 
@@ -75,6 +76,8 @@ All services to monitor are specified as Service objects. To monitor another ser
 2. Service Type - Select "HTTP".
 3. Url - The url to invoke when checking for uptime.
 4. Email list - A pipe-delimited list of recipients of the notification emails for this service.
+5. Ping interval minutes - The number of minutes between each ping of the service.
+6. Timeout minutes - The number of minutes to wait before determining that the service has timed out.
 
 Design Overview
 ===============
@@ -88,14 +91,4 @@ The data model of the monitor app consists of two main entities: the Service, an
 For SMS services, every minute, a task runs to see if the proper wait time has passed to send another ping request to the service and sends it accordingly. Or, if a request has already been sent and no valid response has been received, the task checks to see if the timeout interval has passed and sends a notification email accordingly.
 
 For HTTP services, the same task checks to see if the proper wait time has passed to send another ping request to the service and sends it accordingly. The timeout is processed as an Exception raised when trying to open the URL.
-
-To configure the two intervals mentioned above, set the following constants in localsettings.py:
-
- * SERVICE_MONITOR__PING_INTERVAL
-   
-   This is the number of minutes to wait between sending requests to each service.
- 
- * SERVICE_MONITOR__WAIT_TIME
- 
-   This is the number of minutes to wait before considering an unresponsive service as being timed out, for both SMS and HTTP services.
 

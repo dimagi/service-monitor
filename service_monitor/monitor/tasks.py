@@ -94,9 +94,8 @@ def run(*args, **kwargs):
                 pinglog_entry.save()
                 
                 # Try to send the request
-                timeout_minutes = getattr(settings,"SERVICE_MONITOR__WAIT_TIME",SERVICE_MONITOR__DEFAULT_WAIT_TIME)
                 try:
-                    result = urllib2.urlopen(service.url,timeout=timeout_minutes*60)
+                    result = urllib2.urlopen(service.url,timeout=service.timeout_minutes*60)
                     
                     # Mark the service as having responded 
                     current_date = datetime.datetime.now(tz=pytz.utc)

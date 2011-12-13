@@ -4,9 +4,6 @@ from django.db import models
 from django.db.models import Q
 from django.conf import settings
 
-SERVICE_MONITOR__DEFAULT_PING_INTERVAL = 30 #Default number of minutes to wait between sending pings
-SERVICE_MONITOR__DEFAULT_WAIT_TIME = 5      #Default number of minutes to wait before considering a ping request to be timed out
-
 SERVICE_MONITOR__HTTP = 1
 SERVICE_MONITOR__SMS = 2
 
@@ -85,6 +82,14 @@ class Service(models.Model):
        ,help_text="A list of recipients for the email notification if the service is not responding (separate multiple email addresses with a | )."
     )
     
+    ping_interval_minutes = models.IntegerField(
+        help_text="The number of minutes between each ping of the service."
+    )
+    
+    timeout_minutes = models.IntegerField(
+        help_text="The number of minutes to wait before determining that the service has timed out."
+    )
+    
     active = models.BooleanField(
         default=True
     )
@@ -117,7 +122,7 @@ class Service(models.Model):
         if self.last_request_date is None:
             return True
         else:
-            delta = datetime.timedelta(minutes=getattr(settings,"SERVICE_MONITOR__PING_INTERVAL",SERVICE_MONITOR__DEFAULT_PING_INTERVAL))
+            delta = datetime.timedelta(minutes=self.ping_interval_minutes)
             next_ping_time = self.last_request_date + delta
             current_time = datetime.datetime.now()
             # Note: Django returns self.last_request_date as a naive datetime object, converted to the local timezone
@@ -135,7 +140,7 @@ class Service(models.Model):
         if self.last_request_date is None:
             return False
         else:
-            delta = datetime.timedelta(minutes=getattr(settings,"SERVICE_MONITOR__WAIT_TIME",SERVICE_MONITOR__DEFAULT_WAIT_TIME))
+            delta = datetime.timedelta(minutes=self.timeout_minutes)
             timeout_time = self.last_request_date + delta
             current_time = datetime.datetime.now()
             # Note: Django returns self.last_request_date as a naive datetime object, converted to the local timezone
