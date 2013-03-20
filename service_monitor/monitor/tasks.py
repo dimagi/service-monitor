@@ -54,7 +54,10 @@ def run(*args, **kwargs):
             if service.can_ping_again():
                 # Mark the request as being sent for this service
                 current_date = datetime.datetime.now(tz=pytz.utc)
-                service.last_request_date = current_date
+                if service.last_request_date:
+                    service.last_request_date += datetime.timedelta(minutes=service.ping_interval_minutes)
+                else:
+                    service.last_request_date = current_date
                 service.last_response_date = None
                 service.ping_state = SERVICE_MONITOR__REQUEST_SENT
                 service.save()
