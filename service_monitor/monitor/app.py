@@ -34,7 +34,7 @@ class App(AppBase):
     def handle(self, message):
         try:
             # Get the regular expression which the response should match
-            service = Service.objects.get(connection=message.connection)
+            service = Service.objects.get(connection__identity=message.connection.identity)
             valid_response_regex = service.valid_response_regex
             if (valid_response_regex is None) or (valid_response_regex == ""):
                 valid_response_regex = r"^(.+)$"
